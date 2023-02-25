@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
     <head>
@@ -7,6 +8,8 @@
         <title>LWS Assignment 1 - Scoreboard</title>
         <link rel="icon" type="image/x-icon" href="./image/favicon.png" />
         <link rel="stylesheet" href="./style.css" />
+        <!-- Redux CDN -->
+        <script src="https://unpkg.com/redux@latest/dist/redux.min.js"></script>
     </head>
 
     <body>
@@ -26,9 +29,9 @@
                 </div>
             </header>
             <!-- matches  -->
-            <div id="matchContainer" class="all-matches container">
+            <div id="all-matches-el" class="all-matches container">
                 <!-- Each form tag is Each row, This will render multiple times on Clicking 'Add Another Match' -->
-                <div class="match">
+                <!-- <div id="matchEl" class="match">
                     <div class="wrapper">
                         <button class="lws-delete">
                             <img src="./image/delete.svg" alt="" />
@@ -39,32 +42,31 @@
                         <form class="incrementForm">
                             <h4>Increment</h4>
                             <input
-                                data-target="1"
-                                id="increment"
                                 type="number"
                                 name="increment"
                                 class="lws-increment"
+                                id="incrementEl"
                             />
                         </form>
                         <form class="decrementForm">
                             <h4>Decrement</h4>
                             <input
-                                id="decrement"
                                 type="number"
                                 name="decrement"
                                 class="lws-decrement"
+                                id="decrementEl"
                             />
                         </form>
                     </div>
                     <div class="numbers">
-                        <h2 id="value" class="lws-singleResult">0</h2>
+                        <h2 id="total-score" class="lws-singleResult">120</h2>
                     </div>
-                </div>
+                </div> -->
             </div>
             <!-- for adding another matches -->
             <div class="add_match">
-                <button class="btn lws-addMatch" id="newMatchBtn">Add Another Match</button>
-                <button id="reset" class="lws-reset">
+                <button id="add-another-match" class="btn lws-addMatch">Add Another Match</button>
+                <button onclick="handleReset()" class="lws-reset">
                     <svg
                         fill="none"
                         width="24"
@@ -88,8 +90,6 @@
 
         <section class="mask"></section>
 
-
-        <script src="https://unpkg.com/redux@5.0.0-alpha.0/dist/redux.js"></script>
         <script src="./script.js"></script>
     </body>
 </html>

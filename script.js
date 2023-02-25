@@ -1,141 +1,136 @@
-// generate variable function 
-const generateVariable = (id) =>{
-    return document.getElementById(id);
-}
+// select dom elements
+const decrementEl = document.getElementById("decrementEl");
+const matchContainerEl = document.getElementById("all-matches-el");
+const addAnotherMatch = document.getElementById("add-another-match");
 
-// dom elements 
-const matchContainer = generateVariable('matchContainer')
-const newMatchBtn = generateVariable('newMatchBtn')
-const valueEl = generateVariable('value')
-const resetBtn = generateVariable('reset')
-const incrementValues = document.querySelectorAll('.lws-increment')
-// action types 
-const INCREMENT = 'increment';
-const DECREMENT = 'decrement';
-const RESET = 'reset';
-const ENTER = 'Enter'
-const KEYPRESS = 'keypress'
-const ADD_NEW_MATCH = 'newmatch'
-const REMOVE_MATCH = 'removematch'
-
-// action and payload generator 
-const fireAction = (type,payload)=>{
-    return {type,payload}
-}
-
-// initialState here 
+// initial state
 const initialState = {
-    matches:[
-        {
-            id:1,
-            value:0
-        }
-    ]
+  value: [
+    {
+      id: 1,
+      value: 0,
+      matchNumber: 1,
+    },
+  ],
+};
+
+// create reducer function
+function scoreReducer(state = initialState, action) {
+  console.log("action", action);
+  if (action.type === "increment") {
+    return {
+      ...state,
+      value: state.value.map((match) =>
+        match.id === action.payload.id
+          ? { ...match, value: match.value + action.payload.value }
+          : match
+      ),
+    };
+  } else if (action.type === "decrement") {
+    return {
+      ...state,
+      value: state.value.map((match) =>
+        match.id === action.payload.id
+          ? { ...match, value: Math.max(0, match.value - action.payload.value) }
+          : match
+      ),
+    };
+  } else if (action.type === "add_match") {
+    const newMatch = {
+      id: state.value[state.value.length - 1].id + 1,
+      value: 0,
+      matchNumber: state.value[state.value.length - 1].matchNumber + 1,
+    };
+    return {
+      ...state,
+      value: [...state.value, newMatch],
+    };
+  } else if (action.type === "reset_match") {
+    const updateStore = state.value.map((item) => {
+      return { ...item, value: 0 };
+    });
+    return { ...state, value: updateStore };
+  } else {
+    return state;
+  }
 }
 
+// create store
+const store = Redux.createStore(scoreReducer);
 
-// reducer here 
-function scoreBoardReducer(state=initialState,action){
-    if (action.type===ADD_NEW_MATCH) {
-        const items = state.matches.length;
-        return {
-            ...state,
-            matches:[...state.matches,{id:items+action.payload,value:0}]
-        }
-    }else if(action.type===REMOVE_MATCH){
-        if (state.matches.length<=1) {
-            return
-        } else {
-            const filteredMatch = state.matches.filter(match=> match.id !== action.payload)
-            return {
-                ...state,
-                matches:filteredMatch
-            }
-        }
-        
-    }else if(action.type===INCREMENT){
-        console.log(action.payload.value,action.payload.id)
-        const filtered = state.matches.filter(match=> match.id !== +action.payload.id)
-        let selected = state.matches.find(match=> match.id === +action.payload.id)
-        selected.value = action.payload.value
-        const newArr = [...filtered,selected]
-        // console.log(newArr)
-        return {
-            ...state,
-            matches:newArr
-        }
-    } else{
-        return state
-    }
-}
+const handleIncrement = (event, id) => {
+  event.preventDefault();
+  const incrementValue = parseInt(event.target.value);
+  store.dispatch({
+    type: "increment",
+    payload: { id, value: incrementValue },
+  });
+};
 
-// store 
-const store = Redux.createStore(scoreBoardReducer)
+const handleDecrement = (event, id) => {
+  event.preventDefault();
+  const decrementValue = parseInt(event.target.value);
+  store.dispatch({
+    type: "decrement",
+    payload: { id, value: decrementValue },
+  });
+};
 
-// render function 
-const render = ()=>{
-    const state = store.getState();
-    state.matches && (matchContainer.innerHTML = state.matches.map((match)=>`<div class="match">
-    <div class="wrapper">
-        <button onclick="removeMatch(${match.id})" class="lws-delete">
+const handleReset = (event, id) => {
+  store.dispatch({
+    type: "reset_match",
+  });
+};
+
+const render = () => {
+  const state = store.getState();
+  matchContainerEl.innerHTML = ""; // clear the container before appending new elements
+  state.value.forEach((element) => {
+    matchContainerEl.innerHTML += `
+      <div id="matchEl" class="match">
+        <div class="wrapper">
+          <button class="lws-delete">
             <img src="./image/delete.svg" alt="" />
-        </button>
-        <h3 class="lws-matchName">Match ${match.id}</h3>
-    </div>
-    <div class="inc-dec">
-        <form class="incrementForm">
+          </button>
+          <h3 class="lws-matchName">Match ${element.matchNumber}</h3>
+        </div>
+        <div class="inc-dec">
+          <form onsubmit="" class="incrementForm">
             <h4>Increment</h4>
             <input
-                data-target=${match.id}
-                type="number"
-                name="increment"
-                class="lws-increment"
+              onchange="handleIncrement(event, ${element.id})"
+              type="number"
+              name="increment"
+              class="lws-increment"
             />
-        </form>
-        <form class="decrementForm">
-            <h4>Decrement</h4>
-            <input
-                type="number"
-                name="decrement"
-                class="lws-decrement"
-            />
-        </form>
-    </div>
-    <div class="numbers">
-        <h2 id="value${match.id}" class="lws-singleResult">${match.value}</h2>
-    </div>
-</div>`))
-}
-// render()
+          </form>
+          <form class="decrementForm">
+                            <h4>Decrement</h4>
+                            <input
+                            onchange="handleDecrement(event, ${element.id})"
+                                type="number"
+                                name="decrement"
+                                class="lws-decrement"
+                            />
+                        </form>
+                    </div>
+                    <div class="numbers">
+                        <h2 id="total-score" class="lws-singleResult">${element?.value}</h2>
+                    </div>
+                </div> `;
+  });
+};
 
-// subscribed data from store with render function 
-store.subscribe(render)
+// update UI initially
+render();
+const handleSubmit = (event) => {
+  event.preventDefault();
+};
 
-// events
+store.subscribe(render);
 
-for (let i = 0; i < incrementValues.length; i++) {
-    const element = incrementValues[i];
-    let id = element.getAttribute('data-target')
-    element.addEventListener('keypress', (e)=>{
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            console.log(e.target.value)
-            store.dispatch({type:INCREMENT,payload:{id:id,value:e.target.value}})
-            
-        }
-    })
-}
-const removeMatch = (id)=>{
-    store.dispatch(fireAction(REMOVE_MATCH,id))
-}
-newMatchBtn.addEventListener('click',()=>{
-    store.dispatch(fireAction(ADD_NEW_MATCH,1))
-})
-// resetBtn.addEventListener('click',()=>{
-//     store.dispatch(fireAction(RESET,0))
-// })
-
-
-
-
-
+addAnotherMatch.addEventListener("click", () => {
+  store.dispatch({
+    type: "add_match",
+  });
+});
